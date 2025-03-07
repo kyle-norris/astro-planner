@@ -19,10 +19,6 @@ export async function getWeatherData(lat: number, long: number) {
 
     // Attributes for timezone and location
     const utcOffsetSeconds = response.utcOffsetSeconds();
-    const timezone = response.timezone();
-    const timezoneAbbreviation = response.timezoneAbbreviation();
-    const latitude = response.latitude();
-    const longitude = response.longitude();
 
     const hourly = response.hourly()!;
 
@@ -89,11 +85,13 @@ export async function getSunriseSunset(lat: number, lng: number) {
 }
 
 
-export async function createCloudCoverChart(id: string, weatherData: WeatherData, sunriseSunset: SunriseSunset | false) {
-
-    console.log(weatherData);
-    console.log(sunriseSunset);
-
+export async function createWeatherLineChart(
+    id: string,
+    value: 'cloudCover' | 'visibility',
+    title: string,
+    weatherData: WeatherData,
+    sunriseSunset: SunriseSunset | false
+) {
     var sunset_date: Date | null = null;
     var sunrise_date: Date | null = null;
 
@@ -106,21 +104,16 @@ export async function createCloudCoverChart(id: string, weatherData: WeatherData
 
     }
 
-    
-
     var time = weatherData.hourly.time;
-    var cloudCover = weatherData.hourly.cloudCover;
+    var data = weatherData.hourly[value];
 
     var x_axis: string[] = [];
     var y_axis: number[] = [];
 
     time.forEach((dt, idx) => {
-        let now = new Date();
-        let hour = dt.getHours();
-
-        if (sunset_date && differenceInHours(dt, sunset_date) > -2 || sunrise_date && differenceInHours(dt, sunrise_date) < 2) {
+        if (sunset_date && differenceInHours(dt, sunset_date) > 0 || sunrise_date && differenceInHours(dt, sunrise_date) < 0) {
             x_axis.push(format(dt, "h:mm a"));
-            y_axis.push(cloudCover[idx]);
+            y_axis.push(data[idx]);
         }
     })
 
@@ -135,13 +128,16 @@ export async function createCloudCoverChart(id: string, weatherData: WeatherData
                     labels: x_axis,
                     datasets: [
                         {
-                            label: 'Cloud Cover',
+                            label: title,
                             data: y_axis,
                             fill: 'origin',
+                            borderColor: "rgba(0, 0, 0, 0.9)",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)"
                         }
                     ]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     elements: {
                         point: {
                             radius: 0,

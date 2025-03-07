@@ -16,5 +16,4 @@
 	Image is loading!
 {:then base64}
 	<img src={base64} alt="Alright Buddy!" />
-	<!-- 	<code>{base64}</code> -->
 {/await}
